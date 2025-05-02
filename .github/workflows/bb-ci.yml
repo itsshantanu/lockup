@@ -1,0 +1,23 @@
+name: "BB-CI: Build and Test"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Forge Build
+    uses: itsshantanu/gha-utils/.github/workflows/forge-build.yml@main
+    secrets: inherit
+
+  test:
+    name: Forge Test
+    needs: build
+    uses: itsshantanu/gha-utils/.github/workflows/forge-test.yml@main
+    with:
+      match-path: "test/**.t.sol"
+      fuzz-seed: true
+      name: "Forge Test Suite"
+    secrets: inherit
