@@ -6,8 +6,8 @@ on:
 
 jobs:
   lint:
-    uses: "sablier-labs/gha-utils/.github/workflows/evm-lint.yml@main"
+    uses: "onlyonejmjq/gha-utils/.github/workflows/evm-lint.yml@main"
 
   slither-analyze:
     needs: "lint"
-    uses: "sablier-labs/gha-utils/.github/workflows/slither-analyze.yml@main"
+    uses: "onlyonejmjq/gha-utils/.github/workflows/slither-analyze.yml@main"

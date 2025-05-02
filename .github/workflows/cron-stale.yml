@@ -7,4 +7,4 @@ on:
 
 jobs:
   cron-stale:
-    uses: "sablier-labs/gha-utils/.github/workflows/cron-stale.yml@main"
+    uses: "onlyonejmjq/gha-utils/.github/workflows/cron-stale.yml@main"
