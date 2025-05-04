@@ -17,7 +17,7 @@ jobs:
     needs: build
     uses: itsshantanu/gha-utils/.github/workflows/forge-test.yml@main
     with:
-      match-path: "test/**.t.sol"
+      match-path: "tests/**/*.t.sol"
       fuzz-seed: true
       name: "Forge Test Suite"
     secrets: inherit
