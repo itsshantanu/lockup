@@ -7,17 +7,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  lint:
+    name: Forge Lint
+    uses: itsshantanu/gha-utils/.github/workflows/evm-lint.yml@main
+    secrets: inherit
+
   build:
     name: Forge Build
     uses: itsshantanu/gha-utils/.github/workflows/forge-build.yml@main
     secrets: inherit
 
-  test:
-    name: Forge Test
-    needs: build
+  test-invariant:
+    needs: ["lint", "build"]
     uses: itsshantanu/gha-utils/.github/workflows/forge-test.yml@main
     with:
-      match-path: "tests/**/*.t.sol"
-      fuzz-seed: true
-      name: "Forge Test Suite"
-    secrets: inherit
+      foundry-invariant-depth: ${{ fromJSON(inputs.invariantDepth || '100') }}
+      foundry-invariant-runs: ${{ fromJSON(inputs.invariantRuns || '100') }}
+      foundry-profile: "test-optimized"
+      match-path: "tests/invariant/**/*.sol"
+      name: "Invariant tests"
