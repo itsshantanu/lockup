@@ -17,12 +17,10 @@ jobs:
     uses: itsshantanu/gha-utils/.github/workflows/forge-build.yml@main
     secrets: inherit
 
-  test-invariant:
+  test-utils:
     needs: ["lint", "build"]
-    uses: itsshantanu/gha-utils/.github/workflows/forge-test.yml@main
+    uses: "itsshantanu/gha-utils/.github/workflows/forge-test.yml@main"
     with:
-      foundry-invariant-depth: ${{ fromJSON(inputs.invariantDepth || '100') }}
-      foundry-invariant-runs: ${{ fromJSON(inputs.invariantRuns || '100') }}
       foundry-profile: "test-optimized"
-      match-path: "tests/invariant/**/*.sol"
-      name: "Invariant tests"
+      match-path: "tests/utils/**/*.sol"
+      name: "Utils tests"
