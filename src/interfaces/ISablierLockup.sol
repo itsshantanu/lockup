@@ -106,6 +106,12 @@ interface ISablierLockup is
         ILockupNFTDescriptor indexed newNFTDescriptor
     );
 
+    /// @notice Emitted when the min USD fee is set by the admin.
+    event SetMinFeeUSD(address indexed admin, uint256 newMinFeeUSD, uint256 previousMinFeeUSD);
+
+    /// @notice Emitted when the oracle contract address is set by the admin.
+    event SetOracle(address indexed admin, address newOracle, address previousOracle);
+
     /// @notice Emitted when tokens are withdrawn from a stream.
     /// @param streamId The ID of the stream.
     /// @param to The address that has received the withdrawn tokens.
@@ -116,6 +122,19 @@ interface ISablierLockup is
     /*//////////////////////////////////////////////////////////////////////////
                           USER-FACING READ-ONLY FUNCTIONS
     //////////////////////////////////////////////////////////////////////////*/
+
+    /// @notice Calculates the min fee in wei required to withdraw from a stream.
+    /// @dev Uses {minFeeUSD} and the oracle price.
+    ///
+    /// The price is considered to be 0 if:
+    /// 1. The oracle is not set.
+    /// 2. The min USD fee is 0.
+    /// 3. The oracle price is ≤ 0.
+    /// 4. The oracle's update timestamp is in the future.
+    /// 5. The oracle price hasn't been updated in the last 24 hours.
+    ///
+    /// @return The min fee in wei, denominated in 18 decimals (1e18 = 1 native token).
+    function calculateMinFeeWei() external view returns (uint256);
 
     /// @notice Retrieves the stream's recipient.
     /// @dev Reverts if the NFT has been burned.
@@ -437,6 +456,15 @@ interface ISablierLockup is
     ///
     /// @param streamId The ID of the stream to renounce.
     function renounce(uint256 streamId) external payable;
+
+    /// @notice Sets the min USD fee for withdrawals.
+    /// @dev Emits a {SetMinFeeUSD} event.
+    ///
+    /// Requirements:
+    /// - `msg.sender` must be either the admin or have the {IRoleAdminable.FEE_MANAGEMENT_ROLE} role.
+    ///
+    /// @param newMinFeeUSD The custom USD fee to set, denominated in 8 decimals.
+    function setMinFeeUSD(uint256 newMinFeeUSD) external;
 
     /// @notice Sets the native token address. Once set, it cannot be changed.
     /// @dev For more information, see the documentation for {nativeToken}.

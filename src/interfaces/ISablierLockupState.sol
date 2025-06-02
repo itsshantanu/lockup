@@ -14,6 +14,10 @@ interface ISablierLockupState {
                           USER-FACING READ-ONLY FUNCTIONS
     //////////////////////////////////////////////////////////////////////////*/
 
+    /// @notice Retrieves the maximum USD fee that can be set for withdraw fee.
+    /// @dev The returned value is 100e8, which is equivalent to $100.
+    function MAX_FEE_USD() external view returns (uint256);
+
     /// @notice Retrieves the aggregate amount across all streams, denoted in units of the token's decimals.
     /// @dev If tokens are directly transferred to the contract without using the stream creation functions, the
     /// ERC-20 balance may be greater than the aggregate amount.
@@ -113,6 +117,11 @@ interface ISablierLockupState {
     /// @param streamId The stream ID for the query.
     function isTransferable(uint256 streamId) external view returns (bool result);
 
+    /// @notice Retrieves the min USD fee required to withdraw from a stream, paid in the native token of the chain,
+    /// e.g., ETH for Ethereum Mainnet.
+    /// @dev The fee is denominated in Chainlink's 8-decimal format for USD prices, where 1e8 is $1.
+    function minFeeUSD() external view returns (uint256);
+
     /// @notice Retrieves the address of the ERC-20 interface of the native token, if it exists.
     /// @dev The native tokens on some chains have a dual interface as ERC-20. For example, on Polygon the $POL token
     /// is the native token and has an ERC-20 version at 0x0000000000000000000000000000000000001010. This means
@@ -126,6 +135,9 @@ interface ISablierLockupState {
 
     /// @notice Contract that generates the non-fungible token URI.
     function nftDescriptor() external view returns (ILockupNFTDescriptor);
+
+    /// @notice Retrieves the oracle contract address, which provides price data for the native token.
+    function oracle() external view returns (address oracle);
 
     /// @notice Retrieves a flag indicating whether the stream was canceled.
     /// @dev Reverts if `streamId` references a null stream.

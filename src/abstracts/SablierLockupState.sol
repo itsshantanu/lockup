@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.22;
 
+import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import { ILockupNFTDescriptor } from "../interfaces/ILockupNFTDescriptor.sol";
@@ -16,7 +17,13 @@ abstract contract SablierLockupState is ISablierLockupState {
     //////////////////////////////////////////////////////////////////////////*/
 
     /// @inheritdoc ISablierLockupState
+    uint256 public constant override MAX_FEE_USD = 100e8;
+
+    /// @inheritdoc ISablierLockupState
     mapping(IERC20 token => uint256 amount) public override aggregateAmount;
+
+    /// @inheritdoc ISablierLockupState
+    uint256 public override minFeeUSD;
 
     /// @inheritdoc ISablierLockupState
     address public override nativeToken;
@@ -26,6 +33,9 @@ abstract contract SablierLockupState is ISablierLockupState {
 
     /// @inheritdoc ISablierLockupState
     ILockupNFTDescriptor public override nftDescriptor;
+
+    /// @inheritdoc ISablierLockupState
+    address public override oracle;
 
     /// @dev Mapping of contracts allowed to hook to Sablier when a stream is canceled or when tokens are withdrawn.
     mapping(address recipient => bool allowed) internal _allowedToHook;
@@ -60,12 +70,22 @@ abstract contract SablierLockupState is ISablierLockupState {
     //////////////////////////////////////////////////////////////////////////*/
 
     /// @param initialNFTDescriptor The address of the initial NFT descriptor.
-    constructor(address initialNFTDescriptor) {
+    /// @param initialMinFeeUSD The initial min USD fee charged for claiming an airdrop.
+    /// @param initialOracle The initial oracle contract address.
+    constructor(uint256 initialMinFeeUSD, address initialNFTDescriptor, address initialOracle) {
+        // Set the minimum fee in USD.
+        minFeeUSD = initialMinFeeUSD;
+
         // Set the next stream to 1.
         nextStreamId = 1;
 
         // Set the NFT Descriptor.
         nftDescriptor = ILockupNFTDescriptor(initialNFTDescriptor);
+
+        // Set the oracle address.
+        if (initialOracle != address(0)) {
+            _setOracle(initialOracle);
+        }
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -271,5 +291,20 @@ abstract contract SablierLockupState is ISablierLockupState {
         if (_streams[streamId].sender == address(0)) {
             revert Errors.SablierLockupState_Null(streamId);
         }
+    }
+
+    /*//////////////////////////////////////////////////////////////////////////
+                          PRIVATE STATE-CHANGING FUNCTIONS
+    //////////////////////////////////////////////////////////////////////////*/
+
+    /// @dev See the documentation for the user-facing functions that call this internal function.
+    function _setOracle(address newOracle) private {
+        // Check: oracle implements the `latestRoundData` function.
+        if (newOracle != address(0)) {
+            AggregatorV3Interface(newOracle).latestRoundData();
+        }
+
+        // Effect: update the oracle.
+        oracle = newOracle;
     }
 }

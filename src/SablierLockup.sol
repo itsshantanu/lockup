@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity >=0.8.22;
 
+import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import { IERC4906 } from "@openzeppelin/contracts/interfaces/IERC4906.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -47,19 +48,28 @@ contract SablierLockup is
     //////////////////////////////////////////////////////////////////////////*/
 
     /// @param initialAdmin The address of the initial contract admin.
-    /// @param initialNFTDescriptor The address of the NFT descriptor contract.
+    /// @param initialMinFeeUSD The initial min USD fee charged for claiming an airdrop.
+    /// @param initialNFTDescriptor The address of the initial NFT descriptor.
+    /// @param initialOracle The initial oracle contract address.
     constructor(
         address initialAdmin,
-        address initialNFTDescriptor
+        uint256 initialMinFeeUSD,
+        address initialNFTDescriptor,
+        address initialOracle
     )
         ERC721("Sablier Lockup NFT", "SAB-LOCKUP")
         RoleAdminable(initialAdmin)
-        SablierLockupState(initialNFTDescriptor)
+        SablierLockupState(initialMinFeeUSD, initialNFTDescriptor, initialOracle)
     { }
 
     /*//////////////////////////////////////////////////////////////////////////
                           USER-FACING READ-ONLY FUNCTIONS
     //////////////////////////////////////////////////////////////////////////*/
+
+    /// @inheritdoc ISablierLockup
+    function calculateMinFeeWei() external view override returns (uint256) {
+        return _calculateMinFeeWei();
+    }
 
     /// @inheritdoc ISablierLockup
     function getRecipient(uint256 streamId) external view override returns (address recipient) {
@@ -479,6 +489,25 @@ contract SablierLockup is
     }
 
     /// @inheritdoc ISablierLockup
+    function setMinFeeUSD(uint256 newMinFeeUSD) external override onlyRole(FEE_MANAGEMENT_ROLE) {
+        // Check: the new fee is not greater than the maximum allowed.
+        if (newMinFeeUSD > MAX_FEE_USD) {
+            revert Errors.SablierLockup_MaxFeeUSDExceeded(newMinFeeUSD, MAX_FEE_USD);
+        }
+
+        // Effect: update the min USD fee.
+        uint256 currentMinFeeUSD = minFeeUSD;
+        minFeeUSD = newMinFeeUSD;
+
+        // Log the update.
+        emit ISablierLockup.SetMinFeeUSD({
+            admin: admin,
+            newMinFeeUSD: newMinFeeUSD,
+            previousMinFeeUSD: currentMinFeeUSD
+        });
+    }
+
+    /// @inheritdoc ISablierLockup
     function setNativeToken(address newNativeToken) external override onlyAdmin {
         // Check: native token is not set.
         if (nativeToken != address(0)) {
@@ -713,6 +742,57 @@ contract SablierLockup is
     /*//////////////////////////////////////////////////////////////////////////
                             PRIVATE READ-ONLY FUNCTIONS
     //////////////////////////////////////////////////////////////////////////*/
+
+    /// @dev See the documentation for the user-facing functions that call this internal function.
+    function _calculateMinFeeWei() private view returns (uint256) {
+        // If the oracle is not set, return 0.
+        if (oracle == address(0)) {
+            return 0;
+        }
+
+        // If the min USD fee is 0, skip the calculations.
+        if (minFeeUSD == 0) {
+            return 0;
+        }
+
+        // Interactions: query the oracle price and the time at which it was updated.
+        (, int256 price,, uint256 updatedAt,) = AggregatorV3Interface(oracle).latestRoundData();
+
+        // If the price is not greater than 0, skip the calculations.
+        if (price <= 0) {
+            return 0;
+        }
+
+        // Due to reorgs and latency issues, the oracle can have an `updatedAt` timestamp that is in the future. In
+        // this case, we ignore the price and return 0.
+        if (block.timestamp < updatedAt) {
+            return 0;
+        }
+
+        // If the oracle hasn't been updated in the last 24 hours, we ignore the price and return 0. This is a safety
+        // check to avoid using outdated prices.
+        unchecked {
+            if (block.timestamp - updatedAt > 24 hours) {
+                return 0;
+            }
+        }
+
+        // Interactions: query the oracle decimals.
+        uint8 oracleDecimals = AggregatorV3Interface(oracle).decimals();
+
+        // Adjust the price so that it has 8 decimals.
+        uint256 price8D;
+        if (oracleDecimals == 8) {
+            price8D = uint256(price);
+        } else if (oracleDecimals < 8) {
+            price8D = uint256(price) * 10 ** (8 - oracleDecimals);
+        } else {
+            price8D = uint256(price) / 10 ** (oracleDecimals - 8);
+        }
+
+        // Multiply by 10^18 because the native token is assumed to have 18 decimals.
+        return minFeeUSD * 1e18 / price8D;
+    }
 
     /// @notice Checks whether `msg.sender` is the stream's recipient or an approved third party, when the `recipient`
     /// is known in advance.
@@ -1053,6 +1133,14 @@ contract SablierLockup is
 
     /// @dev See the documentation for the user-facing functions that call this private function.
     function _withdraw(uint256 streamId, address to, uint128 amount) private {
+        // Calculate the min fee in wei.
+        uint256 minFeeWei = _calculateMinFeeWei();
+
+        // Check: the min fee was paid.
+        if (msg.value < minFeeWei) {
+            revert Errors.SablierLockup_InsufficientFeePayment(msg.value, minFeeWei);
+        }
+
         // Effect: update the withdrawn amount.
         _streams[streamId].amounts.withdrawn = _streams[streamId].amounts.withdrawn + amount;
 

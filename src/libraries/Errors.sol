@@ -100,8 +100,14 @@ library Errors {
     /// @notice Thrown when the fee transfer fails.
     error SablierLockup_FeeTransferFail(address feeRecipient, uint256 feeAmount);
 
+    /// @notice Thrown when trying to withdraw without paying the min fee.
+    error SablierLockup_InsufficientFeePayment(uint256 feePaid, uint256 minFeeWei);
+
     /// @notice Thrown when the hook does not return the correct selector.
     error SablierLockup_InvalidHookSelector(address recipient);
+
+    /// @notice Thrown when trying to set fee to a value that exceeds the maximum USD fee.
+    error SablierLockup_MaxFeeUSDExceeded(uint256 newFeeUSD, uint256 maxFeeUSD);
 
     /// @notice Thrown when trying to set the native token address when it is already set.
     error SablierLockup_NativeTokenAlreadySet(address nativeToken);
