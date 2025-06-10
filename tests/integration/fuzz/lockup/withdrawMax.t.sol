@@ -2,45 +2,43 @@
 pragma solidity >=0.8.22 <0.9.0;
 
 import { ISablierLockup } from "src/interfaces/ISablierLockup.sol";
-import { Lockup } from "src/types/DataTypes.sol";
+import { Lockup } from "src/types/Lockup.sol";
 
-import { Integration_Test } from "../../../Integration.t.sol";
+import { Integration_Test } from "../../Integration.t.sol";
 
-contract WithdrawMax_Integration_Concrete_Test is Integration_Test {
-    function test_GivenEndTimeNotInFuture() external {
-        // Warp to the stream's end.
-        vm.warp({ newTimestamp: defaults.END_TIME() + 1 seconds });
+contract WithdrawMax_Integration_Fuzz_Test is Integration_Test {
+    function testFuzz_WithdrawMax_EndTimeNotInFuture(uint256 timeJump) external {
+        timeJump = _bound(timeJump, defaults.TOTAL_DURATION(), defaults.TOTAL_DURATION() * 2);
+
+        // Simulate the passage of time.
+        vm.warp({ newTimestamp: defaults.START_TIME() + timeJump });
 
         // Expect the ERC-20 tokens to be transferred to the Recipient.
         expectCallToTransfer({ to: users.recipient, value: defaults.DEPOSIT_AMOUNT() });
 
-        // It should emit a {WithdrawFromLockupStream} event.
+        // Expect the relevant event to be emitted.
         vm.expectEmit({ emitter: address(lockup) });
         emit ISablierLockup.WithdrawFromLockupStream({
             streamId: ids.defaultStream,
             to: users.recipient,
-            amount: defaults.DEPOSIT_AMOUNT(),
-            token: dai
+            token: dai,
+            amount: defaults.DEPOSIT_AMOUNT()
         });
 
         // Make the max withdrawal.
-        uint128 actualReturnedValue = lockup.withdrawMax({ streamId: ids.defaultStream, to: users.recipient });
+        lockup.withdrawMax({ streamId: ids.defaultStream, to: users.recipient });
 
-        // It should return the withdrawn amount.
-        uint128 expectedReturnedValue = defaults.DEPOSIT_AMOUNT();
-        assertEq(actualReturnedValue, expectedReturnedValue, "returnValue");
-
-        // It should update the withdrawn amount.
+        // Assert that the withdrawn amount has been updated.
         uint128 actualWithdrawnAmount = lockup.getWithdrawnAmount(ids.defaultStream);
         uint128 expectedWithdrawnAmount = defaults.DEPOSIT_AMOUNT();
         assertEq(actualWithdrawnAmount, expectedWithdrawnAmount, "withdrawnAmount");
 
-        // It should mark the stream as depleted.
+        // Assert that the stream's status is "DEPLETED".
         Lockup.Status actualStatus = lockup.statusOf(ids.defaultStream);
         Lockup.Status expectedStatus = Lockup.Status.DEPLETED;
         assertEq(actualStatus, expectedStatus);
 
-        // It should make the stream not cancelable.
+        // Assert that the stream is not cancelable anymore.
         bool isCancelable = lockup.isCancelable(ids.defaultStream);
         assertFalse(isCancelable, "isCancelable");
 
@@ -50,34 +48,33 @@ contract WithdrawMax_Integration_Concrete_Test is Integration_Test {
         assertEq(actualNFTowner, expectedNFTOwner, "NFT owner");
     }
 
-    function test_GivenEndTimeInFuture() external {
+    function testFuzz_WithdrawMax(uint256 timeJump) external givenEndTimeInFuture {
+        timeJump = _bound(timeJump, defaults.WARP_26_PERCENT_DURATION(), defaults.TOTAL_DURATION() - 1 seconds);
+
         // Simulate the passage of time.
-        vm.warp({ newTimestamp: defaults.WARP_26_PERCENT() });
+        vm.warp({ newTimestamp: defaults.START_TIME() + timeJump });
 
         // Get the withdraw amount.
-        uint128 expectedWithdrawnAmount = lockup.withdrawableAmountOf(ids.defaultStream);
+        uint128 withdrawAmount = lockup.withdrawableAmountOf(ids.defaultStream);
 
         // Expect the tokens to be transferred to the Recipient.
-        expectCallToTransfer({ to: users.recipient, value: expectedWithdrawnAmount });
+        expectCallToTransfer({ to: users.recipient, value: withdrawAmount });
 
-        // It should emit a {WithdrawFromLockupStream} event.
+        // Expect the relevant event to be emitted.
         vm.expectEmit({ emitter: address(lockup) });
         emit ISablierLockup.WithdrawFromLockupStream({
             streamId: ids.defaultStream,
             to: users.recipient,
-            amount: expectedWithdrawnAmount,
-            token: dai
+            token: dai,
+            amount: withdrawAmount
         });
 
         // Make the max withdrawal.
-        uint128 actualWithdrawnAmount = lockup.withdrawMax({ streamId: ids.defaultStream, to: users.recipient });
+        lockup.withdrawMax({ streamId: ids.defaultStream, to: users.recipient });
 
-        // It should return the withdrawable amount.
+        // Assert that the withdrawn amount has been updated.
+        uint128 actualWithdrawnAmount = lockup.getWithdrawnAmount(ids.defaultStream);
+        uint128 expectedWithdrawnAmount = withdrawAmount;
         assertEq(actualWithdrawnAmount, expectedWithdrawnAmount, "withdrawnAmount");
-
-        // Assert that the stream's status is still "STREAMING".
-        Lockup.Status actualStatus = lockup.statusOf(ids.defaultStream);
-        Lockup.Status expectedStatus = Lockup.Status.STREAMING;
-        assertEq(actualStatus, expectedStatus);
     }
 }

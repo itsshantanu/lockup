@@ -24,7 +24,7 @@ contract LockupAdminHandler is BaseHandler {
     constructor(IERC20 token_, ISablierLockup lockup_) BaseHandler(token_, lockup_) { }
 
     /*//////////////////////////////////////////////////////////////////////////
-                                 SABLIER-LOCKUP-STATE
+                                   SABLIER-LOCKUP
     //////////////////////////////////////////////////////////////////////////*/
 
     /// @dev Increase the Lockup contract's balance by directly transferring tokens to it.
