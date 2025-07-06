@@ -25,6 +25,16 @@
     "solarray": "github:evmcheb/solarray#a547630",
     "solhint": "^5.1"
   },
+  "scripts": {
+    "prepack": "bun install --frozen-lockfile && bash ./scripts/bash/prepare-artifacts.sh",
+    "prepare": "husky",
+    "lint": "bun run lint:sol && bun run prettier:check",
+    "lint:fix": "bun run lint:sol:fix && forge fmt",
+    "lint:sol": "forge fmt --check && bun solhint \"{benchmark,script,src,tests}/**/*.sol\"",
+    "lint:sol:fix": "bun solhint \"{benchmark,script,src,tests}/**/*.sol\" --fix --noPrompt",
+    "prettier:check": "prettier --check \"**/*.{json,md,svg,yml}\"",
+    "prettier:write": "prettier --write \"**/*.{json,md,svg,yml}\""
+  },
   "files": [
     "artifacts",
     "src",
