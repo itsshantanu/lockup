@@ -20,6 +20,7 @@ jobs:
   test-utils:
     needs: ["lint", "build"]
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+    secrets: inherit
     with:
       foundry-profile: "test-optimized"
       match-path: "tests/utils/**/*.sol"
