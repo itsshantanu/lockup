@@ -7,6 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
+  check:
+    uses: "itsshantanu/gha-utils/.github/workflows/full-check.yml@main"
+ 
   lint:
     name: Forge Lint
     uses: itsshantanu/gha-utils/.github/workflows/evm-lint.yml@demo/bb-ci
@@ -17,11 +20,20 @@ jobs:
     uses: itsshantanu/gha-utils/.github/workflows/forge-build.yml@demo/bb-ci
     secrets: inherit
 
-  test-utils:
-    needs: ["lint", "build"]
-    uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
-    secrets: inherit
+  # test-utils:
+  #   needs: ["lint", "build"]
+  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+  #   secrets: inherit
+  #   with:
+  #     foundry-profile: "test-optimized"
+  #     match-path: "tests/utils/**/*.sol"
+  #     name: "Utils tests"
+
+  test-unit:
+    needs: ["check", "build"]
+    if: needs.build.outputs.cache-status != 'primary'
+    uses: "itsshantanu/gha-utils/.github/workflows/forge-test.yml@demo/bb-ci"
     with:
       foundry-profile: "test-optimized"
-      match-path: "tests/utils/**/*.sol"
-      name: "Utils tests"
+      match-path: "tests/unit/**/*.sol"
+      name: "Unit tests"
