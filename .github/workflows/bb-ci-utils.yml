@@ -8,8 +8,8 @@ on:
 
 jobs:
   check:
-    uses: "itsshantanu/gha-utils/.github/workflows/full-check.yml@main"
- 
+    uses: "itsshantanu/gha-utils/.github/workflows/full-check.yml@demo/bb-ci"
+
   lint:
     name: Forge Lint
     uses: itsshantanu/gha-utils/.github/workflows/evm-lint.yml@demo/bb-ci
