@@ -31,7 +31,7 @@ jobs:
 
   test-unit:
     needs: ["check", "build"]
-    uses: "itsshantanu/gha-utils/.github/workflows/forge-test.yml@demo/bb-ci"
+    uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
       foundry-profile: "test-optimized"
