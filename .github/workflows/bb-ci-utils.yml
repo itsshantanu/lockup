@@ -20,21 +20,21 @@ jobs:
     uses: itsshantanu/gha-utils/.github/workflows/forge-build.yml@demo/bb-ci
     secrets: inherit
 
-  # test-utils:
-  #   needs: ["lint", "build"]
-  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
-  #   secrets: inherit
-  #   with:
-  #     foundry-profile: "test-optimized"
-  #     match-path: "tests/utils/**/*.sol"
-  #     name: "Utils tests"
-
-  test-unit:
-    needs: ["check", "build"]
+  test-utils:
+    needs: ["lint", "build"]
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
-      foundry-fuzz-runs: 2000
       foundry-profile: "test-optimized"
-      match-path: "tests/unit/**/*.sol"
-      name: "Unit tests"
+      match-path: "tests/utils/**/*.sol"
+      name: "Utils tests"
+
+  # test-unit:
+  #   needs: ["check", "build"]
+  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+  #   secrets: inherit
+  #   with:
+  #     foundry-fuzz-runs: 2000
+  #     foundry-profile: "test-optimized"
+  #     match-path: "tests/unit/**/*.sol"
+  #     name: "Unit tests"
