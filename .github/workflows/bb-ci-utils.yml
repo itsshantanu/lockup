@@ -31,7 +31,6 @@ jobs:
 
   test-unit:
     needs: ["check", "build"]
-    if: needs.build.outputs.cache-status != 'primary'
     uses: "itsshantanu/gha-utils/.github/workflows/forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
