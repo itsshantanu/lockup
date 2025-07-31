@@ -34,6 +34,6 @@ jobs:
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
-      foundry-profile: "test-optimized"
+      foundry-profile: "lite"
       match-path: "tests/unit/**/*.sol"
       name: "Unit tests"
