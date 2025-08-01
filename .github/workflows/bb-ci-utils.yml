@@ -58,9 +58,8 @@ jobs:
 
   test-fork:
     needs: ["check", "build"]
-    secrets:
-      MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+    secrets: inherit
     with:
       foundry-fuzz-runs: 20
       foundry-profile: "lite"
