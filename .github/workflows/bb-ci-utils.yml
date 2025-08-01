@@ -63,6 +63,6 @@ jobs:
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
     with:
       foundry-fuzz-runs: 20
-      foundry-profile: "test-optimized"
+      foundry-profile: "lite"
       match-path: "tests/fork/**/*.sol"
       name: "Fork tests"
