@@ -45,7 +45,7 @@ jobs:
     secrets: inherit
     with:
       foundry-fuzz-runs: 2000
-      foundry-profile: "lite"
+      foundry-profile: "test-optimized"
       match-path: "tests/integration/**/*.sol"
       name: "Integration tests"
 
