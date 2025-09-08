@@ -111,3 +111,4 @@ The primary license for Sablier Lockup is the Business Source License 1.1 (`BUSL
 - Several files in `src`, `scripts/solidity`, and `tests` are licensed under `GPL-3.0-or-later`, see
   [`LICENSE-GPL.md`](./LICENSE-GPL.md).
 - Many files in `tests/` remain unlicensed (as indicated in their SPDX headers).
+- Test.
