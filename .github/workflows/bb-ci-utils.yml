@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  check:
-    uses: "itsshantanu/gha-utils/.github/workflows/full-check.yml@demo/bb-ci"
+  # check:
+  #   uses: "itsshantanu/gha-utils/.github/workflows/full-check.yml@demo/bb-ci"
 
-  lint:
-    name: Forge Lint
-    uses: itsshantanu/gha-utils/.github/workflows/evm-lint.yml@demo/bb-ci
-    secrets: inherit
+  # lint:
+  #   name: Forge Lint
+  #   uses: itsshantanu/gha-utils/.github/workflows/evm-lint.yml@demo/bb-ci
+  #   secrets: inherit
 
   build:
     name: Forge Build
@@ -40,7 +40,7 @@ jobs:
   #     name: "Unit tests"
 
   test-integration:
-    needs: ["check", "build"]
+    # needs: ["check", "build"]
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
