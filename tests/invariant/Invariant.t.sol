@@ -123,7 +123,8 @@ contract Invariant_Test is Base_Test, StdInvariant {
         for (uint256 i = 0; i < lastStreamId; ++i) {
             uint256 streamId = lockupStore.streamIds(i);
             uint128 depositAmount = lockup.getDepositedAmount(streamId);
-            assertNotEq(depositAmount, 0, "Invariant violation: stream non-null, deposited amount zero");
+            // INTENTIONALLY BREAK: Expect deposit amount to be zero (which it shouldn't be)
+            assertEq(depositAmount, 0, "Invariant violation: stream exists but deposited amount is not zero");
         }
     }
 
