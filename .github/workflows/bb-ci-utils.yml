@@ -60,7 +60,7 @@ jobs:
 
   test-fork:
     needs: ["build"]
-    uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+    uses: "itsshantanu/gha-utils/.github/workflows/bb-fork-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
       foundry-fuzz-runs: 20
