@@ -49,21 +49,21 @@ jobs:
   #     match-path: "tests/integration/**/*.sol"
   #     name: "Integration tests"
 
-  test-invariant:
+  # test-invariant:
+  #   needs: ["build"]
+  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+  #   secrets: inherit
+  #   with:
+  #     foundry-profile: "lite"
+  #     match-path: "tests/invariant/**/*.sol"
+  #     name: "Invariant tests"
+
+  test-fork:
     needs: ["build"]
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
-      foundry-profile: "lite"
-      match-path: "tests/invariant/**/*.sol"
-      name: "Invariant tests"
-
-  # test-fork:
-  #   needs: ["check", "build"]
-  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
-  #   secrets: inherit
-  #   with:
-  #     foundry-fuzz-runs: 20
-  #     foundry-profile: "lite"
-  #     match-path: "tests/fork/**/*.sol"
-  #     name: "Fork tests"
+      foundry-fuzz-runs: 20
+      foundry-profile: "test-optimized"
+      match-path: "tests/fork/**/*.sol"
+      name: "Fork tests"
