@@ -91,15 +91,15 @@ on:
 
 jobs:
   forge-test:
-    name: ${{ inputs.name }}
+    name: ${{ inputs.name || 'Forge tests' }}
     defaults:
       run:
-        working-directory: ${{ inputs.working-directory }}
+        working-directory: ${{ inputs.working-directory || 'flow' }}
     env:
-      FOUNDRY_INVARIANT_DEPTH: ${{ inputs.foundry-invariant-depth }}
-      FOUNDRY_INVARIANT_RUNS: ${{ inputs.foundry-invariant-runs }}
-      FOUNDRY_FUZZ_RUNS: ${{ inputs.foundry-fuzz-runs }}
-      FOUNDRY_PROFILE: ${{ inputs.foundry-profile }}
+      FOUNDRY_INVARIANT_DEPTH: ${{ inputs.foundry-invariant-depth || 20 }}
+      FOUNDRY_INVARIANT_RUNS: ${{ inputs.foundry-invariant-runs || 20 }}
+      FOUNDRY_FUZZ_RUNS: ${{ inputs.foundry-fuzz-runs || 1000 }}
+      FOUNDRY_PROFILE: ${{ inputs.foundry-profile || 'default' }}
       MAINNET_RPC_URL: ${{ secrets.MAINNET_RPC_URL }}
       ROUTEMESH_API_KEY: ${{ secrets.ROUTEMESH_API_KEY }}
     runs-on: "ubuntu-latest"
@@ -181,10 +181,13 @@ jobs:
 
       - name: "Run the tests"
         run: |
-          for attempt in $(seq 1 ${{ inputs.retry-attempts }}); do
-            if forge test --match-path "${{ inputs.match-path }}"; then
+          MATCH_PATH="${{ inputs.match-path || 'tests/{integration,utils}/**/*.sol' }}"
+          RETRY_ATTEMPTS="${{ inputs.retry-attempts || 1 }}"
+
+          for attempt in $(seq 1 $RETRY_ATTEMPTS); do
+            if forge test --match-path "$MATCH_PATH"; then
               break
-            elif [ $attempt -eq ${{ inputs.retry-attempts }} ]; then
+            elif [ $attempt -eq $RETRY_ATTEMPTS ]; then
               exit 1
             else
               echo "♻️ Attempt $attempt: tests failed, retrying in 60 seconds..."
@@ -207,5 +210,6 @@ jobs:
 
       - name: "Add summary"
         run: | # shell
-          echo "## Result for ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+          TEST_NAME="${{ inputs.name || 'Forge tests' }}"
+          echo "## Result for $TEST_NAME" >> $GITHUB_STEP_SUMMARY
           echo "✅ Passed" >> $GITHUB_STEP_SUMMARY
