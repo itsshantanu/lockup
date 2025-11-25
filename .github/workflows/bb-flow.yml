@@ -114,6 +114,7 @@ jobs:
           override: true
 
       - name: Clone Foundry repository
+        working-directory: .
         run: |
           if [ ! -d "foundry" ]; then
             git clone https://github.com/BuildBearLabs/foundry.git -b feat/single_json_output
@@ -121,6 +122,7 @@ jobs:
         shell: bash
 
       - name: Set Foundry commit hash
+        working-directory: .
         id: foundry_hash
         run: echo "hash=$(git -C foundry rev-parse HEAD)" >> $GITHUB_OUTPUT
 
@@ -130,10 +132,11 @@ jobs:
         with:
           path: |
             foundry/target
-            $HOME/.config/.foundry/bin
+            ~/.config/.foundry/bin
           key: ${{ runner.os }}-foundry-build-${{ steps.foundry_hash.outputs.hash }}
 
       - name: Build Foundry from source or copy from target
+        working-directory: .
         run: |
           FOUNDRY_BIN="$HOME/.config/.foundry/bin/forge"
           TARGET_FORGE="foundry/target/debug/forge"
@@ -160,7 +163,7 @@ jobs:
         with:
           path: |
             foundry/target
-            $HOME/.config/.foundry/bin
+            ~/.config/.foundry/bin
           key: ${{ runner.os }}-foundry-build-${{ steps.foundry_hash.outputs.hash }}
 
       - name: Show Forge version
@@ -182,7 +185,7 @@ jobs:
       - name: "Run the tests"
         working-directory: ${{ inputs.working-directory || 'flow' }}
         run: |
-          MATCH_PATH="${{ inputs.match-path || 'tests/integration/**/*.sol' }}"
+          MATCH_PATH="${{ inputs.match-path || 'tests/{integration,utils}/**/*.sol' }}"
           RETRY_ATTEMPTS="${{ inputs.retry-attempts || 1 }}"
 
           for attempt in $(seq 1 $RETRY_ATTEMPTS); do
@@ -208,6 +211,7 @@ jobs:
         uses: BuildBearLabs/buildbear_x_action@feat/test-simulation-workflow
         with:
           buildbear-api-key: ${{ secrets.BUILDBEAR_API_KEY }}
+          working-directory: ${{ inputs.working-directory || 'flow' }}
 
       - name: "Add summary"
         run: | # shell
