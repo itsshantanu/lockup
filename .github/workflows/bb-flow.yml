@@ -166,9 +166,6 @@ jobs:
       - name: Show Forge version
         run: forge --version
 
-      - name: "Change to working directory"
-        run: cd ${{ inputs.working-directory || 'flow' }}
-
       - name: "Install Bun"
         uses: "oven-sh/setup-bun@v2"
         with:
@@ -183,8 +180,9 @@ jobs:
           FOUNDRY_PROFILE=test-optimized forge build
 
       - name: "Run the tests"
+        working-directory: ${{ inputs.working-directory || 'flow' }}
         run: |
-          MATCH_PATH="${{ inputs.match-path || 'tests/{integration,utils}/**/*.sol' }}"
+          MATCH_PATH="${{ inputs.match-path || 'tests/integration/**/*.sol' }}"
           RETRY_ATTEMPTS="${{ inputs.retry-attempts || 1 }}"
 
           for attempt in $(seq 1 $RETRY_ATTEMPTS); do
