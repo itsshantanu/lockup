@@ -117,7 +117,7 @@ jobs:
         working-directory: .
         run: |
           if [ ! -d "foundry" ]; then
-            git clone https://github.com/BuildBearLabs/foundry.git -b feat/single_json_output
+            git clone https://github.com/BuildBearLabs/foundry.git -b feat/single_json_output_new
           fi
         shell: bash
 
