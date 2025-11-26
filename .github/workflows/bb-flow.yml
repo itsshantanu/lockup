@@ -180,6 +180,7 @@ jobs:
       - name: "Build contracts with the specified profiles"
         run: |
           echo "Building with profile: test-optimized"
+          FOUNDRY_PROFILE="optimized" forge build
           FOUNDRY_PROFILE=test-optimized forge build
 
       - name: "Run the tests"
@@ -189,7 +190,7 @@ jobs:
           RETRY_ATTEMPTS="${{ inputs.retry-attempts || 1 }}"
 
           for attempt in $(seq 1 $RETRY_ATTEMPTS); do
-            if forge test --match-path "$MATCH_PATH"; then
+            if FOUNDRY_PROFILE="test-optimized" forge test --match-path "$MATCH_PATH"; then
               break
             elif [ $attempt -eq $RETRY_ATTEMPTS ]; then
               exit 1
