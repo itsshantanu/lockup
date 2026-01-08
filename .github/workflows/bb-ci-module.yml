@@ -101,6 +101,7 @@ jobs:
   test-unit:
     needs: ["build", "check"]
     uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+    secrets: inherit
     with:
       cache-path: |
         ${{ inputs.module }}/cache
