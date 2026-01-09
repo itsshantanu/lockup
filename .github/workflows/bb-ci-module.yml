@@ -50,27 +50,9 @@ jobs:
       test-dir: "${{ inputs.module }}/tests"
       working-directory: ${{ inputs.module }}
 
-  #   test-fork:
-  #     needs: ["build", "check"]
-  #     secrets:
-  #      // ROUTEMESH_API_KEY: ${{ secrets.ROUTEMESH_API_KEY }}
-  #     uses: "itsshantanu/gha-utils/.github/workflows/forge-test.yml@main"
-  #     with:
-  #       cache-path: |
-  #        // ${{ inputs.module }}/cache
-  #         //${{ inputs.module }}/node_modules
-  #         //${{ inputs.module }}/out
-  #         //${{ inputs.module }}/out-optimized
-  #       foundry-fuzz-runs: 20
-  #       foundry-profile: "test-optimized"
-  #       foundry-version: "v1.4.4"
-  #       match-path: "tests/fork/**/*.sol"
-  #       name: "Fork tests"
-  #       //working-directory: ${{ inputs.module }}
-
-  test-integration:
+  test-fork:
     needs: ["build", "check"]
-    uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+    uses: "itsshantanu/gha-utils/.github/workflows/bb-fork-forge-test.yml@demo/bb-ci"
     secrets: inherit
     with:
       cache-path: |
@@ -78,43 +60,60 @@ jobs:
         ${{ inputs.module }}/node_modules
         ${{ inputs.module }}/out
         ${{ inputs.module }}/out-optimized
+      foundry-fuzz-runs: 20
       foundry-profile: "test-optimized"
       foundry-version: "v1.4.4"
-      match-path: "tests/{integration,utils}/**/*.sol"
-      name: "Integration tests"
+      match-path: "tests/fork/**/*.sol"
+      name: "Fork tests"
       working-directory: ${{ inputs.module }}
 
-  test-invariant:
-    needs: ["build", "check"]
-    uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
-    secrets: inherit
-    with:
-      cache-path: |
-        ${{ inputs.module }}/cache
-        ${{ inputs.module }}/node_modules
-        ${{ inputs.module }}/out
-        ${{ inputs.module }}/out-optimized
-      foundry-profile: "test-optimized"
-      foundry-version: "v1.4.4"
-      match-path: "tests/invariant/**/*.sol"
-      name: "Invariant tests"
-      working-directory: ${{ inputs.module }}
+  # test-integration:
+  #   needs: ["build", "check"]
+  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+  #   secrets: inherit
+  #   with:
+  #     cache-path: |
+  #      // ${{ inputs.module }}/cache
+  #      // ${{ inputs.module }}/node_modules
+  #      // ${{ inputs.module }}/out
+  #      // ${{ inputs.module }}/out-optimized
+  #     foundry-profile: "test-optimized"
+  #     foundry-version: "v1.4.4"
+  #     match-path: "tests/{integration,utils}/**/*.sol"
+  #     name: "Integration tests"
+  #    // working-directory: ${{ inputs.module }}
 
-  test-unit:
-    needs: ["build", "check"]
-    uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
-    secrets: inherit
-    with:
-      cache-path: |
-        ${{ inputs.module }}/cache
-        ${{ inputs.module }}/node_modules
-        ${{ inputs.module }}/out
-        ${{ inputs.module }}/out-optimized
-      foundry-profile: "test-optimized"
-      foundry-version: "v1.4.4"
-      match-path: "tests/unit/**/*.sol"
-      name: "Unit tests"
-      working-directory: ${{ inputs.module }}
+  # test-invariant:
+  #   needs: ["build", "check"]
+  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+  #   secrets: inherit
+  #   with:
+  #     cache-path: |
+  #      // ${{ inputs.module }}/cache
+  #       //${{ inputs.module }}/node_modules
+  #       //${{ inputs.module }}/out
+  #       //${{ inputs.module }}/out-optimized
+  #     foundry-profile: "test-optimized"
+  #     foundry-version: "v1.4.4"
+  #     match-path: "tests/invariant/**/*.sol"
+  #     name: "Invariant tests"
+  #    // working-directory: ${{ inputs.module }}
+
+  # test-unit:
+  #   needs: ["build", "check"]
+  #   uses: "itsshantanu/gha-utils/.github/workflows/bb-forge-test.yml@demo/bb-ci"
+  #   secrets: inherit
+  #   with:
+  #     cache-path: |
+  #      //${{ inputs.module }}/cache
+  #       //${{ inputs.module }}/node_modules
+  #       //${{ inputs.module }}/out
+  #       //${{ inputs.module }}/out-optimized
+  #     foundry-profile: "test-optimized"
+  #     foundry-version: "v1.4.4"
+  #     match-path: "tests/unit/**/*.sol"
+  #     name: "Unit tests"
+  #    // working-directory: ${{ inputs.module }}
 #   coverage:
 #     needs: ["build", "check", "test-integration"]
 #     secrets:
